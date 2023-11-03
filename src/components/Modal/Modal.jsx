@@ -1,38 +1,37 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-class Modal extends Component {
-  componentDidMount = () => {
-    window.addEventListener('keydown', this.onEsc);
-  };
+const Modal = ({ handlerCloseModal, selectedIMG }) => {
+  useEffect(() => {
+    const onEsc = e => {
+      if (e.code !== 'Escape') {
+        return;
+      }
+      handlerCloseModal();
+    };
+    window.addEventListener('keydown', onEsc);
 
-  componentWillUnmount = () => {
-    window.removeEventListener('keydown', this.onEsc);
-  };
+    return () => {
+      window.removeEventListener('keydown', onEsc);
+    };
+  }, [handlerCloseModal]);
 
-  onEsc = e => {
-    if (e.code !== 'Escape') {
-      return;
-    }
-    this.props.handlerCloseModal();
-  };
-
-  onOverlayClick = ({ target }) => {
+  const onOverlayClick = ({ target }) => {
     if (!target.classList.contains('overlay')) {
       return;
     }
-    this.props.handlerCloseModal();
+   handlerCloseModal();
   };
 
-  render() {
+
     return (
-      <div className="overlay" onClick={this.onOverlayClick}>
+      <div className="overlay" onClick={onOverlayClick}>
         <div className="modal">
-          <img className="image-original" src={this.props.selectedIMG} alt="" />
+          <img className="image-original" src={selectedIMG} alt="" />
         </div>
       </div>
     );
-  }
+  
 }
 export default Modal;
 

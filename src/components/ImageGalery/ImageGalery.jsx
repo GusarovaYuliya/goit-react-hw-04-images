@@ -1,15 +1,12 @@
-import { Component } from 'react';
 import ImageItem from './ImageItem';
 import PropTypes from 'prop-types';
 
-class ImageGalery extends Component {
-  state = {};
-  render() {
+const ImageGalery = ({ handlerImageClick, items}) => {
     return (
       <ul className="gallery">
-        {this.props.items.map(item => (
+        {items.map(item => (
           <ImageItem
-            handlerImageClick={this.props.handlerImageClick}
+            handlerImageClick={handlerImageClick}
             key={item.id}
             largeImageURL={item.largeImageURL}
             previewImage={item.webformatURL}
@@ -17,7 +14,7 @@ class ImageGalery extends Component {
         ))}
       </ul>
     );
-  }
+  
 }
 
 export default ImageGalery;

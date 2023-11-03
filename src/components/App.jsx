@@ -1,131 +1,99 @@
-// export const App = () => {
-//   return (
-//     <div
-//       style={{
-//         height: '100vh',
-//         display: 'flex',
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         fontSize: 40,
-//         color: '#010101'
-//       }}
-//     >
-//       React homework template
-//     </div>
-//   );
-// };
-
-// 39546203-6f24950b6bb132fcbecdbd78e - API ключ
-
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import SearchBar from './SearchBar/SearchBar';
 import ImageGalery from './ImageGalery/ImageGalery';
 import Modal from './Modal/Modal';
-import fetchPixabay from './services/pixabay';
+import fetchPixabay from './Pixabay/Pixabay';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
 
-export class App extends Component {
-  state = {
-    searchText: '',
-    currentPage: 1,
-    totalHits: 0,
-    items: [],
-    error: '',
-    isLoading: false,
-    isShowModal: false,
-    selectedIMG: '',
-  };
+export const App = () => {
+  const [searchText, setSearchText] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalHits, setTotalHits] = useState(0);
+  const [items, setItems] = useState([]);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isShowModal, setIsShowModal] = useState(false);
+  const [selectedIMG, setSelectedIMG] = useState(false);
 
-  componentDidUpdate = (prevProps, prevState) => {
-    if (
-      prevState.searchText !== this.state.searchText ||
-      prevState.currentPage !== this.state.currentPage
-    ) {
-      this.setState({ isLoading: true, items: [] });
-      fetchPixabay(this.state.searchText, this.state.currentPage)
+  useEffect(() => {
+    if (searchText) {
+      setIsLoading(true);
+      fetchPixabay(searchText, currentPage)
         .then(resp => {
           if (!resp.ok) {
-            this.setState({
-              error: 'Sorry, something not good',
-            });
+            setError('Sorry, something not good');
             throw new Error();
           }
-
           return resp.json();
         })
         .then(data => {
           if (data.totalHits === 0) {
-            this.setState({ error: 'Sorry, nothing' });
+            setError('Sorry, nothing');
             throw new Error();
           } else {
-            this.setState({
-              error: '',
-              // items:
-              //   prevState.currentPage === this.state.currentPage
-              //     ? data.hits
-              //     : [...prevState.items, ...data.hits],
-              items:data.hits,
-              totalHits: data.totalHits,
-              isLoading: false,
-            });
+            setItems(prevItems => [...prevItems, ...data.hits]);
+            setTotalHits(data.totalHits);
           }
         })
         .catch(err => console.log(err))
         .finally(() => {
-          this.setState({ isLoading: false });
+          setIsLoading(false);
         });
     }
-  };
+  }, [searchText, currentPage]);
 
-  handlerCloseModal = () => {
-    this.setState({ isShowModal: false });
-  };
-
-  handlerImageClick = ({
+  const handlerImageClick = ({
     target: {
       dataset: { original },
     },
   }) => {
-    this.setState({ isShowModal: true, selectedIMG: original });
+    setSelectedIMG(original);
+    setIsShowModal(true);
   };
 
-  handlerLoadMore = () => {
-    this.setState({ currentPage: this.state.currentPage + 1 });
+  const handlerCloseModal = () => {
+    setIsShowModal(false);
   };
 
-  handlerSubmit = value => {
-    // this.setState({ searchText: value, currentPage: 1, items: [], error: '' });
-    this.setState({ searchText: value, currentPage: 1, error: '' });
+  const handlerLoadMore = () => {
+    setCurrentPage(prevCurrentPage => prevCurrentPage + 1);
   };
 
-  render() {
-    return (
-      <>
-        <SearchBar onSubmit={this.handlerSubmit} />
-        {this.state.isShowModal && (
-          <Modal
-            handlerCloseModal={this.handlerCloseModal}
-            selectedIMG={this.state.selectedIMG}
-          />
-        )}
-        {this.state.items.length > 0 && (
-          <ImageGalery
-            items={this.state.items}
-            handlerImageClick={this.handlerImageClick}
-          />
-        )}
-        {this.state.isLoading && <Loader />}
-        {this.state.items.length < this.state.totalHits &&
-          !this.state.error &&
-          !this.state.isLoading && (
-            <Button handlerLoadMore={this.handlerLoadMore} />
-          )}
-        {this.state.error && <p className="error">{this.state.error}</p>}
-      </>
-    );
-  }
-}
+  const handlerSubmit = value => {
+    setSearchText(value);
+    setCurrentPage(1);
+    setItems([]);
+    setError('');
+  };
+
+  return (
+    <>
+      <SearchBar handlerSubmit={handlerSubmit} />
+      {isShowModal && (
+        <Modal
+          handlerCloseModal={handlerCloseModal}
+          selectedIMG={selectedIMG}
+        />
+      )}
+      {items.length > 0 && (
+        <ImageGalery items={items} handlerImageClick={handlerImageClick} />
+      )}
+      {isLoading && <Loader />}
+      {items.length < totalHits && !error && !isLoading && (
+        <Button handlerLoadMore={handlerLoadMore} />
+      )}
+      {error && <p className="error">{error}</p>}
+    </>
+  );
+};
+
+
+
+
+
+
+
 
 
 

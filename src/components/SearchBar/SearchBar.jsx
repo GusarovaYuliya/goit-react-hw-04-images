@@ -1,54 +1,40 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { Notify } from 'notiflix';
 import PropTypes from 'prop-types';
 
-class SearchBar extends Component {
-  state = {
-    value: '',
-    lastRequest: '',
+const SearchBar = ({ handlerSubmit }) => {
+
+  const [value, setValue] = useState('');
+  const [lastRequest, setLastRequest] = useState('');
+
+  const onChange = ({ target: { value } }) => {
+    // setValue({ value });
+     setValue(value);
   };
 
-  onChange = ({ target: { value } }) => {
-    this.setState({ value });
-  };
-
-  onSubmit = e => {
+  const onSubmit = e => {
     e.preventDefault();
-    if (this.state.value.trim() === '') {
+    if (value.trim() === '') {
       return Notify.failure('Please, write something');
-    } else if (
-      this.state.value.toLowerCase().trim() === this.state.lastRequest
-    ) {
+    } else if (value.toLowerCase().trim() === lastRequest) {
       return Notify.failure('This is current request');
     }
-
-    this.setState({
-      lastRequest: this.state.value.toLowerCase().trim(),
-    });
-    this.props.onSubmit(this.state.value.toLowerCase().trim());
-    this.setState({
-      value: '',
-    });
+    handlerSubmit(value.toLowerCase().trim());
+    setLastRequest(value.toLowerCase().trim());
+    setValue('');
   };
 
-  //   this.props.onSubmit(this.state.value.toLowerCase().trim());
-  //   this.setState({
-  //     value: '',
-  //     lastRequest: this.state.value.toLowerCase().trim(),
-  //   });
-  // };
-  render() {
     return (
       <header className="searchbar">
-        <form className="form" onSubmit={this.onSubmit}>
+        <form className="form" onSubmit={onSubmit}>
           <button type="submit" className="searchform-button">
             <span className="searchform-button-label">Search</span>
           </button>
 
           <input
-            onChange={this.onChange}
+            onChange={onChange}
             className="searchform-input"
-            value={this.state.value}
+            value={value}
             type="text"
             autoComplete="off"
             autoFocus
@@ -57,14 +43,13 @@ class SearchBar extends Component {
         </form>
       </header>
     );
-  }
+  
 }
 
 export default SearchBar;
 SearchBar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
 };
-
 
 
 
